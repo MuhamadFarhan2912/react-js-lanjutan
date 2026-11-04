@@ -1,17 +1,45 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getGenres } from "../../../_services/genres";
+import { getGenres, deleteGenre } from "../../../_services/genres";
 
 export default function Genres() {
   const [genres, setGenres] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchGenres = async () => {
+    try {
+      const data = await getGenres();
+      setGenres(data);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getGenres()
-      .then((data) => setGenres(data))
-      .catch((error) => console.log(error))
-      .finally(() => setLoading(false));
+    fetchGenres();
   }, []);
+
+  const handleDelete = async (id) => {
+    const confirmDelete = window.confirm(
+      "Apakah kamu yakin ingin menghapus genre ini?"
+    );
+
+    if (confirmDelete) {
+      try {
+        await deleteGenre(id);
+        setGenres((prevGenres) =>
+          prevGenres.filter((genre) => genre.id !== id)
+        );
+        alert("Genre berhasil dihapus!");
+      } catch (error) {
+        console.error("Gagal menghapus genre:", error);
+        alert("Gagal menghapus genre!");
+      }
+    }
+  };
 
   return (
     <div className="p-4">
@@ -33,13 +61,14 @@ export default function Genres() {
               <th className="px-6 py-3">No</th>
               <th className="px-6 py-3">Name</th>
               <th className="px-6 py-3">Description</th>
+              <th className="px-6 py-3">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="3" className="px-6 py-4 text-center">
+                <td colSpan="4" className="px-6 py-4 text-center">
                   Loading...
                 </td>
               </tr>
@@ -49,11 +78,28 @@ export default function Genres() {
                   <td className="px-6 py-4">{index + 1}</td>
                   <td className="px-6 py-4">{genre.name}</td>
                   <td className="px-6 py-4">{genre.description}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <Link
+                        to={`/admin/genres/edit/${genre.id}`}
+                        className="text-white bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(genre.id)}
+                        className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="3" className="px-6 py-4 text-center">
+                <td colSpan="4" className="px-6 py-4 text-center">
                   Belum ada data genre.
                 </td>
               </tr>
