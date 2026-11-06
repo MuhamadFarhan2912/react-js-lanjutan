@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
 import Footer from "../footer";
-import Navbar from "../navBar";
+import Navbar from "../navbar";
 
 export default function PublicLayout() {
   return (
@@ -9,5 +9,5 @@ export default function PublicLayout() {
       <Outlet />
       <Footer />
     </>
-  )
+  );
 }
