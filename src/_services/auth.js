@@ -1,4 +1,3 @@
-
 import API from "../_api";
 import { jwtDecode } from "jwt-decode";
 
@@ -44,10 +43,10 @@ export const checkTokenValidity = (token) => {
     const decodedToken = jwtDecode(token);
     const currentTime = Date.now() / 1000;
 
-    if (decodedToken.exp < currentTime) {
+    if (!decodedToken.exp || decodedToken.exp <= currentTime) {
       return {
         success: false,
-        message: "Token expired",
+        message: "Token tidak valid atau expired",
         data: null,
       };
     }
@@ -64,6 +63,37 @@ export const checkTokenValidity = (token) => {
       data: null,
     };
   }
+};
+
+// Mengambil data user dari localStorage
+export const getStoredUser = () => {
+  try {
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
+// Mengecek apakah pengguna sudah login
+export const isAuthenticated = () => {
+  const token = localStorage.getItem("token");
+  const user = getStoredUser();
+
+  return checkTokenValidity(token).success && !!user;
+};
+
+// Mengecek hak akses berdasarkan role
+export const hasRole = (allowedRoles = []) => {
+  const user = getStoredUser();
+
+  return !!user && allowedRoles.includes(user.role);
+};
+
+// Menghapus data autentikasi
+export const clearAuthData = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
 };
 
 // Fungsi Logout

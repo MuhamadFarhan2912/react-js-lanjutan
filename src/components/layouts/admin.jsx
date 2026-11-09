@@ -1,31 +1,18 @@
-import { useEffect } from "react";
+
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import { checkTokenValidity, logout } from "../../_services/auth"; 
+import {
+  logout,
+  getStoredUser,
+  clearAuthData,
+} from "../../_services/auth";
 
 export default function AdminLayout() {
   const navigate = useNavigate();
-  
-  const token = localStorage.getItem("token"); 
-  const userInfoStr = localStorage.getItem("user"); 
-  
-  const userInfo = userInfoStr ? JSON.parse(userInfoStr) : null;
-  const decodedData = checkTokenValidity(token);
 
-  useEffect(() => {
-    // 1. Cek apakah token ada dan valid
-    if (!token || !decodedData || !decodedData.success) {
-      navigate("/login");
-      return;
-    }
+  const token = localStorage.getItem("token");
+  const userInfo = getStoredUser();
 
-    // 2. Cek apakah role user adalah admin
-    const role = userInfo?.role;
-    if (!role || role !== "admin") {
-      navigate("/");
-    }
-  }, [token, decodedData, userInfo, navigate]);
-
-  // Fungsi handle logout yang aman dan rapi
+  // Fungsi Logout
   const handleLogout = async () => {
     try {
       if (token) {
@@ -34,7 +21,7 @@ export default function AdminLayout() {
     } catch (error) {
       console.log("Gagal logout dari server:", error);
     } finally {
-      localStorage.clear();
+      clearAuthData();
       navigate("/login");
     }
   };
@@ -42,6 +29,7 @@ export default function AdminLayout() {
   return (
     <>
       <div className="antialiased bg-gray-50 dark:bg-gray-900">
+        {/* Navbar */}
         <nav className="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
           <div className="flex flex-wrap justify-between items-center">
             <div className="flex justify-start items-center">
@@ -79,6 +67,7 @@ export default function AdminLayout() {
                 </svg>
                 <span className="sr-only">Toggle sidebar</span>
               </button>
+
               <Link
                 to={"/admin"}
                 className="flex items-center justify-between mr-4"
@@ -93,7 +82,7 @@ export default function AdminLayout() {
                 </span>
               </Link>
             </div>
-            
+
             <div className="flex items-center lg:order-2">
               <button
                 type="button"
@@ -109,7 +98,7 @@ export default function AdminLayout() {
                   alt="user photo"
                 />
               </button>
-              
+
               {/* Dropdown menu */}
               <div
                 className="hidden z-50 my-4 w-56 text-base list-none bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 rounded-xl"
@@ -123,6 +112,7 @@ export default function AdminLayout() {
                     {userInfo?.email || "admin@company.com"}
                   </span>
                 </div>
+
                 <ul
                   className="py-1 text-gray-700 dark:text-gray-300"
                   aria-labelledby="dropdown"
@@ -157,6 +147,7 @@ export default function AdminLayout() {
                   <span className="ml-3">Overview</span>
                 </Link>
               </li>
+
               <li>
                 <Link
                   to={"/admin/authors"}
@@ -165,6 +156,7 @@ export default function AdminLayout() {
                   <span className="ml-3">Authors</span>
                 </Link>
               </li>
+
               <li>
                 <Link
                   to={"/admin/genres"}
@@ -187,7 +179,7 @@ export default function AdminLayout() {
             </ul>
           </div>
 
-          {/* Tombol Logout di Bagian Bawah Sidebar */}
+          {/* Tombol Logout */}
           <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             <button
               onClick={handleLogout}
